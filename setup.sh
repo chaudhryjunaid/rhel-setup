@@ -82,6 +82,8 @@ gpgcheck=1
 gpgkey=https://cli.github.com/packages/githubcli-archive-keyring.asc
 EOF
 
+# repo_gpgcheck=0 matches Google's documented config (their repo metadata
+# signing is unreliable with dnf); package signatures are still verified.
 add_repo google-cloud-sdk <<'EOF'
 [google-cloud-cli]
 name=Google Cloud CLI
@@ -283,15 +285,20 @@ log "Installing git-delta"
 if ! command -v delta >/dev/null 2>&1; then
     mkdir -p "$HOME/.local/bin"
     DELTA_VER="0.19.2"
+    DELTA_SHA256="8e695c5f586a8c53d6c3b01be0b4a422ed218bfed2a56191caebe373a1c18ab2"
     tmpdir=$(mktemp -d)
     curl -fsSL -o "$tmpdir/delta.tar.gz" \
         "https://github.com/dandavison/delta/releases/download/${DELTA_VER}/delta-${DELTA_VER}-x86_64-unknown-linux-gnu.tar.gz"
+    echo "$DELTA_SHA256  $tmpdir/delta.tar.gz" | sha256sum -c - >/dev/null
     tar -xzf "$tmpdir/delta.tar.gz" -C "$tmpdir"
     cp "$tmpdir/delta-${DELTA_VER}-x86_64-unknown-linux-gnu/delta" "$HOME/.local/bin/"
     rm -rf "$tmpdir"
 fi
 
 # ---------------------------------------------------------------------------
+# fnm, Claude Code, and Zed below use the vendors' official curl|bash
+# installers over TLS — accepted risk for a personal workstation; review
+# the scripts at their URLs if that trust level ever changes.
 log "Installing fnm + Node 26"
 if ! command -v fnm >/dev/null 2>&1 && [ ! -d "$HOME/.local/share/fnm" ]; then
     curl -fsSL https://fnm.vercel.app/install | bash -s -- --skip-shell

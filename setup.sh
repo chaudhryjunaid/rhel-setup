@@ -327,22 +327,6 @@ if [ -n "$ZSH_BIN" ] && [ "$(getent passwd "$USER" | cut -d: -f7)" != "$ZSH_BIN"
 fi
 
 # ---------------------------------------------------------------------------
-log "Creating home directory skeleton"
-mkdir -p "$HOME"/{can,work,personal,projects,backups,archive,inbox,homelab,data}
-
-# ---------------------------------------------------------------------------
-log "Cloning work/homelab repos (needs 'gh auth login')"
-if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-    clone() { [ -d "$2" ] || gh repo clone "$1" "$2" || warn "clone failed: $1"; }
-    clone CANmobilities/CAN-Go_backend   "$HOME/can/CAN-Go_backend"
-    clone CANmobilities/can.portal       "$HOME/can/can.portal"
-    clone CANmobilities/can-care-kfsh-app "$HOME/can/can-care-kfsh-app"
-    clone chaudhryjunaid/unixlab         "$HOME/homelab/unixlab"
-else
-    warn "gh not authenticated — run 'gh auth login' then re-run, or clone repos manually"
-fi
-
-# ---------------------------------------------------------------------------
 log "Installing standalone tools (Claude Code, Zed)"
 command -v claude >/dev/null 2>&1 || curl -fsSL https://claude.ai/install.sh | bash
 command -v zed    >/dev/null 2>&1 || curl -fsSL https://zed.dev/install.sh | sh
